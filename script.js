@@ -1,6 +1,11 @@
 const display = document.getElementById('display');
-const history = document.getElementById('history');
-let justCalculated = false; // track if last action was "="
+const miniHistory = document.getElementById('miniHistory');
+const fullHistory = document.getElementById('fullHistory');
+const historyPanel = document.getElementById('historyPanel');
+
+let justCalculated = false;
+let lastExpression = null;
+let history = [];
 
 // Append number/operator
 function append(value) {
@@ -13,17 +18,14 @@ function append(value) {
     justCalculated = false;
   }
 
-  // Prevent multiple decimals in current number
   const currentNum = display.textContent.split(/[\+\-\*\/%]/).pop();
   if (value === '.' && currentNum.includes('.')) return;
 
-  // Prevent consecutive operators
   if (/[+\-*/%]$/.test(display.textContent) && /[+\-*/%]/.test(value)) {
     display.textContent = display.textContent.slice(0, -1) + value;
     return;
   }
 
-  // Replace leading zero
   if (display.textContent === '0' && value !== '.') {
     display.textContent = value;
   } else {
@@ -31,14 +33,15 @@ function append(value) {
   }
 }
 
-// Clear all
 function clearAll() {
   display.textContent = '0';
-  history.innerHTML = ''; // clear full history
+  miniHistory.innerHTML = '';
+  fullHistory.innerHTML = '';
+  history = [];
   justCalculated = false;
+  lastExpression = null;
 }
 
-// Delete last char
 function deleteChar() {
   if (display.textContent.length > 1) {
     display.textContent = display.textContent.slice(0, -1);
@@ -47,23 +50,17 @@ function deleteChar() {
   }
 }
 
-// --- Helper: evaluate with proper % handling ---
+// --- Percent handling ---
 function evaluateWithPercent(expr) {
-  // Tokenize numbers and operators
   let tokens = expr.match(/(\d+(\.\d+)?%?|\+|\-|\*|\/|\(|\))/g);
   if (!tokens) return NaN;
 
-  // Pass 1: Convert all % into decimal equivalents
   for (let i = 0; i < tokens.length; i++) {
     if (tokens[i].includes('%')) {
       let num = parseFloat(tokens[i].replace('%', ''));
-      // Check previous operator
       let prevOp = (i > 0) ? tokens[i - 1] : null;
-      let prevNum = (i > 1 && !isNaN(tokens[i - 1])) ? parseFloat(tokens[i - 1]) : null;
 
       if (prevOp === '+' || prevOp === '-') {
-        // relative percent (e.g. 200+10% => 200+(200*10/100))
-        // Find the number before +/-
         let base = null;
         for (let j = i - 2; j >= 0; j--) {
           if (!isNaN(tokens[j])) {
@@ -77,42 +74,48 @@ function evaluateWithPercent(expr) {
           tokens[i] = (num / 100).toString();
         }
       } else {
-        // simple percent (e.g. 10% => 0.1, 100*10% => 100*(10/100))
         tokens[i] = (num / 100).toString();
       }
     }
   }
 
-  // Rejoin and evaluate safely
   let safeExpr = tokens.join('');
   return Function(`"use strict"; return (${safeExpr})`)();
 }
 
-// Evaluate expression safely
+// --- Calculate ---
 function calculate() {
   try {
     let expression = display.textContent;
 
-    // Remove trailing operator
+    // Prevent duplicate result if no operator
+    if (justCalculated && !/[+\-*/%]/.test(expression)) return;
+
     if (/[+\-*/.%]$/.test(expression)) {
       expression = expression.slice(0, -1);
     }
 
     let result = evaluateWithPercent(expression);
 
-    // Handle large numbers (format)
     if (typeof result === "number" && !Number.isInteger(result)) {
       result = parseFloat(result.toPrecision(12));
     }
 
-    // Append to history
-    const historyItem = document.createElement("div");
-    historyItem.textContent = display.textContent + " = " + result;
-    history.appendChild(historyItem);
+    // Save in history
+    const historyItem = `${display.textContent} = ${result}`;
+    history.push(historyItem);
 
-    // Update display
+    // Update mini history (last 4 only)
+    miniHistory.innerHTML = history.slice(-4).join('<br>');
+
+    // Update full history panel
+    const item = document.createElement("div");
+    item.textContent = historyItem;
+    fullHistory.appendChild(item);
+
     display.textContent = result;
     justCalculated = true;
+    lastExpression = expression;
   } catch {
     display.textContent = "Error";
     justCalculated = true;
@@ -125,4 +128,9 @@ document.addEventListener('keydown', (e) => {
   else if (e.key === 'Enter') calculate();
   else if (e.key === 'Backspace') deleteChar();
   else if (e.key === 'Escape') clearAll();
+});
+
+// History Panel toggle
+document.getElementById('toggleHistory').addEventListener('click', () => {
+  document.getElementById('historyPanel').classList.toggle('show');
 });
