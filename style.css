@@ -34,7 +34,7 @@ body {
   overflow-x: auto;
 }
 
-/* Mini inline history (last 4 entries only) */
+/* Mini inline history */
 .mini-history {
   font-size: 1rem;
   color: #777;
@@ -152,3 +152,4 @@ body {
 .full-history::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
