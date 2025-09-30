@@ -88,8 +88,8 @@ function calculate() {
   try {
     let expression = display.textContent;
 
-    // Prevent duplicate result if no operator
-    if (justCalculated && !/[+\-*/%]/.test(expression)) return;
+    // ✅ Prevent duplicate result if already calculated
+    if (justCalculated) return;
 
     if (/[+\-*/.%]$/.test(expression)) {
       expression = expression.slice(0, -1);
@@ -125,7 +125,10 @@ function calculate() {
 // Keyboard support
 document.addEventListener('keydown', (e) => {
   if (/[0-9+\-*/.%]/.test(e.key)) append(e.key);
-  else if (e.key === 'Enter') calculate();
+  else if (e.key === 'Enter') {
+    e.preventDefault();
+    calculate();
+  }
   else if (e.key === 'Backspace') deleteChar();
   else if (e.key === 'Escape') clearAll();
 });
