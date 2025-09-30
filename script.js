@@ -88,7 +88,7 @@ function calculate() {
   try {
     let expression = display.textContent;
 
-    // ✅ Prevent duplicate result if already calculated
+    // Prevent duplicate result if already calculated
     if (justCalculated) return;
 
     if (/[+\-*/.%]$/.test(expression)) {
@@ -137,3 +137,4 @@ document.addEventListener('keydown', (e) => {
 document.getElementById('toggleHistory').addEventListener('click', () => {
   document.getElementById('historyPanel').classList.toggle('show');
 });
+
