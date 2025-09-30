@@ -8,8 +8,15 @@
 </head>
 <body>
   <div class="calculator">
-    <div id="history" class="history"></div>
+    <!-- Small history icon -->
+    <button id="toggleHistory" class="history-icon">📜</button>
+
+    <!-- Display only -->
     <div id="display" class="display">0</div>
+
+    <!-- Small inline history -->
+    <div id="miniHistory" class="mini-history"></div>
+
     <div class="buttons">
       <button class="btn action" onclick="clearAll()">AC</button>
       <button class="btn action" onclick="deleteChar()">DEL</button>
@@ -37,6 +44,13 @@
       <button class="btn equal" onclick="calculate()">=</button>
     </div>
   </div>
+
+  <!-- Side History Panel -->
+  <div id="historyPanel" class="history-panel">
+    <h3>History</h3>
+    <div id="fullHistory" class="full-history"></div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
